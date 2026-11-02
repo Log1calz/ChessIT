@@ -1,0 +1,683 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Chess | ChessIT</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #171b1a;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        header {
+            height: 70px;
+            background: #202624;
+            border-bottom: 1px solid #303a35;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+        }
+
+        .logo {
+            color: #81b64c;
+            font-size: 27px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .back-link {
+            color: #c5ccc7;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            color: #81b64c;
+        }
+
+        main {
+            max-width: 1250px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .page-heading p {
+            color: #929c95;
+            font-size: 14px;
+        }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: minmax(300px, 650px) minmax(260px, 340px);
+            justify-content: center;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .board-section {
+            width: 100%;
+        }
+
+        .player-bar {
+            background: #252d29;
+            padding: 13px 16px;
+            border-radius: 9px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .player-name {
+            font-weight: 700;
+        }
+
+        .player-colour {
+            color: #929c95;
+            font-size: 12px;
+        }
+
+        .board {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 10px 35px #00000055;
+        }
+
+        .square {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            aspect-ratio: 1;
+        }
+
+        .light {
+            background: #eeeed2;
+        }
+
+        .dark {
+            background: #769656;
+        }
+
+        .piece {
+            font-family: "Arial Unicode MS", "DejaVu Sans", serif;
+            font-size: clamp(28px, 6vw, 64px);
+            line-height: 1;
+            z-index: 2;
+            cursor: pointer;
+        }
+
+        .white-piece {
+            color: #ffffff;
+            text-shadow: 0 2px 3px #333, 0 0 2px #222;
+        }
+
+        .black-piece {
+            color: #222222;
+            text-shadow: 0 1px 2px #ffffff66;
+        }
+
+        .square.selected {
+            background: #baca44 !important;
+        }
+
+        .square.last-move {
+            background: #f6f669 !important;
+        }
+
+        .square.legal::after {
+            content: "";
+            position: absolute;
+            width: 25%;
+            height: 25%;
+            border-radius: 50%;
+            background: #00000035;
+        }
+
+        .square.capture::after {
+            content: "";
+            position: absolute;
+            width: 85%;
+            height: 85%;
+            border: 5px solid #00000035;
+            border-radius: 50%;
+        }
+
+        .coordinate {
+            position: absolute;
+            font-size: 10px;
+            font-weight: 700;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .rank {
+            top: 3px;
+            left: 4px;
+        }
+
+        .file {
+            bottom: 3px;
+            right: 4px;
+        }
+
+        .light .coordinate {
+            color: #769656;
+        }
+
+        .dark .coordinate {
+            color: #eeeed2;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+
+        .control-button {
+            flex: 1;
+            padding: 13px;
+            border-radius: 7px;
+            background: #303b35;
+            color: white;
+        }
+
+        .control-button:hover {
+            background: #405047;
+        }
+
+        .new-game {
+            background: #81b64c;
+            color: #172016;
+        }
+
+        .new-game:hover {
+            background: #91c75a;
+        }
+
+        .side-panel {
+            background: #222a26;
+            border: 1px solid #303a35;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .panel-heading {
+            padding: 19px;
+            border-bottom: 1px solid #303a35;
+        }
+
+        .panel-heading h2 {
+            font-size: 17px;
+            margin-bottom: 7px;
+        }
+
+        #game-status {
+            color: #81b64c;
+            font-size: 13px;
+        }
+
+        .move-heading {
+            padding: 17px 19px;
+            color: #929c95;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .move-list {
+            height: 300px;
+            overflow-y: auto;
+            padding: 0 12px 12px;
+        }
+
+        .move-row {
+            display: grid;
+            grid-template-columns: 35px 1fr 1fr;
+            padding: 11px 8px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .move-row:nth-child(odd) {
+            background: #2a342e;
+        }
+
+        .move-number {
+            color: #929c95;
+        }
+
+        .move {
+            font-weight: 600;
+        }
+
+        .move:last-child {
+            background: #81b64c;
+            color: #172016;
+            border-radius: 4px;
+            padding: 3px 6px;
+        }
+
+        .instructions {
+            padding: 17px 19px;
+            border-top: 1px solid #303a35;
+            color: #929c95;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 850px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+                max-width: 620px;
+                margin: auto;
+            }
+
+            .side-panel {
+                width: 100%;
+            }
+
+            .move-list {
+                height: 180px;
+            }
+        }
+
+        @media (max-width: 450px) {
+            main {
+                margin-top: 25px;
+                padding: 0 10px;
+            }
+
+            .page-heading h1 {
+                font-size: 24px;
+            }
+
+            header {
+                padding: 0 15px;
+            }
+
+            .piece {
+                font-size: 10vw;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a href="index.html" class="logo">ChessIT</a>
+    <a href="index.html" class="back-link">← Back to Home</a>
+</header>
+
+<main>
+
+    <div class="page-heading">
+        <h1>Play Chess</h1>
+        <p>Challenge yourself and make your next move.</p>
+    </div>
+
+    <div class="game-layout">
+
+        <section class="board-section">
+
+            <div class="player-bar">
+                <span class="player-name">Black Player</span>
+                <span class="player-colour">Black pieces</span>
+            </div>
+
+            <div class="board" id="chessboard"></div>
+
+            <div class="player-bar" style="margin-top: 12px; margin-bottom: 0;">
+                <span class="player-name">White Player</span>
+                <span class="player-colour">White pieces</span>
+            </div>
+
+            <div class="game-controls">
+                <button class="control-button new-game" id="new-game">
+                    New Game
+                </button>
+
+                <button class="control-button" id="flip-board">
+                    Flip Board
+                </button>
+            </div>
+
+        </section>
+
+        <aside class="side-panel">
+
+            <div class="panel-heading">
+                <h2>Game Information</h2>
+                <p id="game-status">White to move</p>
+            </div>
+
+            <div class="move-heading">
+                Move History
+            </div>
+
+            <div class="move-list" id="move-list">
+                <p style="color:#929c95; font-size:13px; padding:10px;">
+                    No moves yet. Make your first move!
+                </p>
+            </div>
+
+            <div class="instructions">
+                <strong>How to play</strong><br>
+                1. Click one of your pieces.<br>
+                2. Available moves will be highlighted.<br>
+                3. Click a highlighted square to move.<br>
+                4. White moves first.
+            </div>
+
+        </aside>
+
+    </div>
+
+</main>
+
+<script type="module">
+    import { Chess } from "https://esm.sh/chess.js@1.4.0";
+
+    const game = new Chess();
+
+    const boardElement = document.getElementById("chessboard");
+    const statusElement = document.getElementById("game-status");
+    const moveListElement = document.getElementById("move-list");
+
+    let selectedSquare = null;
+    let legalMoves = [];
+    let flipped = false;
+    let lastMove = null;
+
+    const pieces = {
+        wk: "♔", wq: "♕", wr: "♖",
+        wb: "♗", wn: "♘", wp: "♙",
+        bk: "♚", bq: "♛", br: "♜",
+        bb: "♝", bn: "♞", bp: "♟"
+    };
+
+    function renderBoard() {
+        boardElement.innerHTML = "";
+
+        const files = flipped
+            ? ["h", "g", "f", "e", "d", "c", "b", "a"]
+            : ["a", "b", "c", "d", "e", "f", "g", "h"];
+
+        const ranks = flipped
+            ? ["1", "2", "3", "4", "5", "6", "7", "8"]
+            : ["8", "7", "6", "5", "4", "3", "2", "1"];
+
+        for (let rankIndex = 0; rankIndex < 8; rankIndex++) {
+            for (let fileIndex = 0; fileIndex < 8; fileIndex++) {
+
+                const squareName = files[fileIndex] + ranks[rankIndex];
+
+                const fileNumber = squareName.charCodeAt(0) - 97;
+                const rankNumber = Number(squareName[1]);
+
+                const square = document.createElement("div");
+
+                square.className =
+                    "square " +
+                    ((fileNumber + rankNumber) % 2 === 0 ? "light" : "dark");
+
+                square.dataset.square = squareName;
+
+                if (
+                    lastMove &&
+                    (squareName === lastMove.from || squareName === lastMove.to)
+                ) {
+                    square.classList.add("last-move");
+                }
+
+                if (selectedSquare === squareName) {
+                    square.classList.add("selected");
+                }
+
+                if (legalMoves.some(move => move.to === squareName)) {
+                    const targetPiece = game.get(squareName);
+
+                    square.classList.add(targetPiece ? "capture" : "legal");
+                }
+
+                const piece = game.get(squareName);
+
+                if (piece) {
+                    const pieceElement = document.createElement("span");
+
+                    pieceElement.className =
+                        "piece " +
+                        (piece.color === "w" ? "white-piece" : "black-piece");
+
+                    pieceElement.textContent = pieces[piece.color + piece.type];
+
+                    square.appendChild(pieceElement);
+                }
+
+                if (fileIndex === 0) {
+                    const rankLabel = document.createElement("span");
+                    rankLabel.className = "coordinate rank";
+                    rankLabel.textContent = ranks[rankIndex];
+                    square.appendChild(rankLabel);
+                }
+
+                if (rankIndex === 7) {
+                    const fileLabel = document.createElement("span");
+                    fileLabel.className = "coordinate file";
+                    fileLabel.textContent = files[fileIndex];
+                    square.appendChild(fileLabel);
+                }
+
+                square.addEventListener("click", () => handleSquareClick(squareName));
+
+                boardElement.appendChild(square);
+            }
+        }
+    }
+
+    function handleSquareClick(squareName) {
+        if (game.isGameOver()) return;
+
+        const piece = game.get(squareName);
+
+        if (selectedSquare) {
+            const possibleMove = legalMoves.find(
+                move => move.to === squareName
+            );
+
+            if (possibleMove) {
+                makeMove(selectedSquare, squareName);
+                return;
+            }
+        }
+
+        if (piece && piece.color === game.turn()) {
+            selectedSquare = squareName;
+
+            legalMoves = game.moves({
+                square: squareName,
+                verbose: true
+            });
+
+            renderBoard();
+            return;
+        }
+
+        selectedSquare = null;
+        legalMoves = [];
+        renderBoard();
+    }
+
+    function makeMove(from, to) {
+        const movingPiece = game.get(from);
+
+        const isPromotion =
+            movingPiece.type === "p" &&
+            (to[1] === "8" || to[1] === "1");
+
+        let promotion = "q";
+
+        if (isPromotion) {
+            const choice = prompt(
+                "Promote your pawn to: queen, rook, bishop or knight",
+                "queen"
+            );
+
+            const choices = {
+                queen: "q",
+                rook: "r",
+                bishop: "b",
+                knight: "n"
+            };
+
+            promotion = choices[(choice || "queen").toLowerCase()] || "q";
+        }
+
+        try {
+            const move = game.move({
+                from,
+                to,
+                promotion
+            });
+
+            if (move) {
+                lastMove = { from, to };
+            }
+        } catch (error) {
+            console.error("Invalid move:", error);
+        }
+
+        selectedSquare = null;
+        legalMoves = [];
+
+        renderBoard();
+        updateStatus();
+        updateMoveHistory();
+    }
+
+    function updateStatus() {
+        if (game.isCheckmate()) {
+            statusElement.textContent =
+                "Checkmate! " +
+                (game.turn() === "w" ? "Black" : "White") +
+                " wins!";
+        } else if (game.isStalemate()) {
+            statusElement.textContent = "Draw by stalemate!";
+        } else if (game.isDraw()) {
+            statusElement.textContent = "Game drawn!";
+        } else if (game.isCheck()) {
+            statusElement.textContent =
+                (game.turn() === "w" ? "White" : "Black") +
+                " is in check!";
+        } else {
+            statusElement.textContent =
+                (game.turn() === "w" ? "White" : "Black") +
+                " to move";
+        }
+    }
+
+    function updateMoveHistory() {
+        const history = game.history();
+
+        if (history.length === 0) {
+            moveListElement.innerHTML =
+                '<p style="color:#929c95; font-size:13px; padding:10px;">No moves yet. Make your first move!</p>';
+            return;
+        }
+
+        moveListElement.innerHTML = "";
+
+        for (let i = 0; i < history.length; i += 2) {
+            const row = document.createElement("div");
+            row.className = "move-row";
+
+            const number = document.createElement("span");
+            number.className = "move-number";
+            number.textContent = (Math.floor(i / 2) + 1) + ".";
+
+            const whiteMove = document.createElement("span");
+            whiteMove.className = "move";
+            whiteMove.textContent = history[i];
+
+            const blackMove = document.createElement("span");
+            blackMove.className = "move";
+            blackMove.textContent = history[i + 1] || "";
+
+            row.append(number, whiteMove, blackMove);
+            moveListElement.appendChild(row);
+        }
+
+        moveListElement.scrollTop = moveListElement.scrollHeight;
+    }
+
+    document.getElementById("new-game").addEventListener("click", () => {
+        if (
+            game.history().length > 0 &&
+            !confirm("Start a new game? Your current game will be lost.")
+        ) {
+            return;
+        }
+
+        game.reset();
+        selectedSquare = null;
+        legalMoves = [];
+        lastMove = null;
+
+        renderBoard();
+        updateStatus();
+        updateMoveHistory();
+    });
+
+    document.getElementById("flip-board").addEventListener("click", () => {
+        flipped = !flipped;
+        renderBoard();
+    });
+
+    renderBoard();
+    updateStatus();
+</script>
+
+</body>
+</html>
